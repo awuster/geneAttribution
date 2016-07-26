@@ -15,8 +15,8 @@ loadBed(files, weights)
 A list of GenomicRanges objects containing the data from the *.BED files, with weightings in the score column
 }
 \description{
-Required *.BED file format (tab-separated): chr start end symbol (optional column: score).
-File must have header. Sample files supplied with package are limited to chromosome 2.
+Required *.BED file format (tab-separated): chr start end name (optional column: score).
+Sample files supplied with package are limited to chromosome 2.
 }
 \examples{
 fileName1 <- system.file("extdata", "hiCRegions.b38.bed", package="geneAttribution")

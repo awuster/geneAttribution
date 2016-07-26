@@ -1,7 +1,7 @@
 Package: geneAttribution
 Type: Package
 Title: Identification of candidate genes associated with genetic variation
-Version: 0.99.0
+Version: 0.99.1
 Date: 2016-07-19
 Author: Arthur Wuster
 Maintainer: Arthur Wuster <wustera@gene.com>
@@ -16,7 +16,8 @@ biocViews:
     SNP,
     GenePrediction,
     GenomeWideAssociation,
-    VariantAnnotation
+    VariantAnnotation,
+    GenomicVariation
 Imports: 
     utils,
     GenomicRanges,
@@ -24,7 +25,8 @@ Imports:
     BiocGenerics,
     GenomeInfoDb,
     GenomicFeatures,
-    IRanges
+    IRanges,
+    rtracklayer
 Suggests: 
     TxDb.Hsapiens.UCSC.hg38.knownGene,
     TxDb.Hsapiens.UCSC.hg19.knownGene,

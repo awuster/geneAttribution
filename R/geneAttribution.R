@@ -45,8 +45,8 @@ geneModels <- function(txdb=TxDb.Hsapiens.UCSC.hg38.knownGene::TxDb.Hsapiens.UCS
 
 #' Load UCSC *.BED files containing empirical data
 #'
-#' Required *.BED file format (tab-separated): chr start end symbol (optional column: score).
-#' File must have header. Sample files supplied with package are limited to chromosome 2.
+#' Required *.BED file format (tab-separated): chr start end name (optional column: score).
+#' Sample files supplied with package are limited to chromosome 2.
 #' @param files A character vector containing *.BED file names
 #' @param weights An integer vector containing weighting for each bed file. Optional
 #' @return A list of GenomicRanges objects containing the data from the *.BED files, with weightings in the score column
@@ -67,9 +67,7 @@ loadBed <- function(files, weights) {
 
 	empF <- files[ii]
 	message("\nNow loading BED file ", empF, "\n")
-	empD <- utils::read.table(empF, sep="\t", header=TRUE, stringsAsFactors=FALSE) # Read BED file as data frame
-	if (ncol(empD) < 4) { stop("Incorrect number of columns for", empF, "\n") }
-	empG <- GenomicRanges::makeGRangesFromDataFrame(empD, keep.extra.columns=TRUE, ignore.strand=TRUE) # Convert data frame to GRanges object
+	empG <- rtracklayer::import.bed(empF) # Read BED file as GRanges object
 
 	# Add weighting if not already in score column in BED file
 	# Report back on which weighting was used
@@ -162,7 +160,7 @@ ga <- function(chr, pos, geneCoordinates, empiricalData, lambda=7.61e-06, maxDis
 	    iiOverlapIdx <- GenomicRanges::findOverlaps(query, iiEmp)
 	    empSubset <- iiEmp[as.data.frame(iiOverlapIdx)[[2]]]
 	    empWeights <- empSubset$score
-	    names(empWeights) <- empSubset$symbol
+	    names(empWeights) <- empSubset$name
 
 	    # Only keep weightings for genes that are within maxDist
 	    empWeights <- empWeights[names(prior)]
