@@ -9,39 +9,79 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-`geneAttribution` is an R package for identifying the most likely gene or genes through which variation at a given genomic locus in the human genome acts. A typical use case is the annotation of results from genome-wide association studies (GWAS). The majority of variants identified by GWAS are located in noncoding regions and likely act by affecting gene expression ([Maurano et al. 2012](http://doi.org/10.1126/science.1222794)). Variants typically contain multiple genes in the region of linkage disequilibrium and identifying the causative one is challenging.
+`geneAttribution` is an R package for identifying the most likely gene or genes
+through which variation at a given genomic locus in the human genome acts. A
+typical use case is the annotation of results from genome-wide association
+studies (GWAS). The majority of variants identified by GWAS are located in
+noncoding regions and likely act by affecting gene expression
+([Maurano et al. 2012](http://doi.org/10.1126/science.1222794)). Variants
+typically contain multiple genes in the region of linkage disequilibrium and
+identifying the causative one is challenging.
 
-The most basic functionality of `geneAttribution` assumes that the closer gene is to the input locus, the more likely the gene is to be causative. Additionally, any empirical data that links genomic regions to genes (e.g. expression quantitative trait loci (eQTL) or genome conformation data) can be used if it is supplied in the [UCSC .BED file](https://genome.ucsc.edu/FAQ/FAQformat.html) format.
+The most basic functionality of `geneAttribution` assumes that the closer gene
+is to the input locus, the more likely the gene is to be causative.
+Additionally, any empirical data that links genomic regions to genes (e.g.
+expression quantitative trait loci (eQTL) or genome conformation data) can be
+used if it is supplied in the
+[UCSC .BED file](https://genome.ucsc.edu/FAQ/FAQformat.html) format.
 
 ## Basic functionality
 
 ```r
 # Basic workflow, default parameters
 geneLocs <- geneModels() # Define gene models
-ga("chr2", 127156000, geneLocs) # Get candidate gene probabilities
+geneAttribution("chr2", 127156000, geneLocs) # Get candidate gene probabilities
 
 # Basic workflow, customized parameters
 library(TxDb.Hsapiens.UCSC.hg19.knownGene) # Load TxDB object containing gene models
 geneLocs <- geneModels(txdb=TxDb.Hsapiens.UCSC.hg19.knownGene, maxGeneLength=1e5) # Define gene models
-ga("chr2", 127156000, geneLocs, lambda=1.0e-5, maxDist=2e6, minPP=0) # Get candidate gene probabilities
+geneAttribution("chr2", 127156000, geneLocs, lambda=1.0e-5, maxDist=2e6, minPP=0) # Get candidate gene probabilities
 ```
 
-The most basic functionality assumes that the closer a gene is to the input locus, the more likely it is to be a candidate gene. The relationship between distance to locus and candidate gene likelihood is modeled as an exponential distribution. The likelihoods for each gene are then normalized by dividing by the sum of likelihoods. As a result, the presence of multiple genes in the vicinity of a locus decreases the posterior probabilities of the individual genes.
+The most basic functionality assumes that the closer a gene is to the input
+locus, the more likely it is to be a candidate gene. The relationship between
+distance to locus and candidate gene likelihood is modeled as an exponential
+distribution. The likelihoods for each gene are then normalized by dividing by
+the sum of likelihoods. As a result, the presence of multiple genes in the
+vicinity of a locus decreases the posterior probabilities of the individual
+genes.
 
 ### geneModels()
 
-To calculate the distance between the input locus and genes, gene models are required. For this, `geneAttribution` provides the `geneModels()` function. `geneModels()` takes a TxDb object containing genomic coordinates of genes as input and returns gene models in GenomicRanges format, with gene names in the `symbol` column. Loading the gene models may take a few minutes. The default for the TxDb input is `TxDb.Hsapiens.UCSC.hg38.knownGene`, which contains gene models for genome build GRCh38. An alternative input would be `TxDb.Hsapiens.UCSC.hg19.knownGene`, which contains gene models for build hg19. The geneModels function has additional optional input:
+To calculate the distance between the input locus and genes, gene models are
+required. For this, `geneAttribution` provides the `geneModels()` function.
+`geneModels()` takes a TxDb object containing genomic coordinates of genes as
+input and returns gene models in GenomicRanges format, with gene names in the
+`symbol` column. Loading the gene models may take a few minutes. The default
+for the TxDb input is `TxDb.Hsapiens.UCSC.hg38.knownGene`, which contains gene
+models for genome build GRCh38. An alternative input would be
+`TxDb.Hsapiens.UCSC.hg19.knownGene`, which contains gene models for build hg19.
+The geneModels function has additional optional input:
 
 * `maxGeneLength`. Gene models that are longer than this are excluded
-* `genesToInclude` and `genesToExclude`. A character vector of gene symbols of genes to include (e.g. only protein coding genes) or exclude
+* `genesToInclude` and `genesToExclude`. A character vector of gene symbols of
+  genes to include (e.g. only protein coding genes) or exclude
 
-### ga()
+### geneAttribution()
 
-The minimum required input for `ga()` is a chromosome identifier in the same format than in the gene models and a chromosomal position in the same build than the gene models. The `ga()` function has additional optional input:
+The minimum required input for `geneAttribution()` is a chromosome identifier
+in the same format than in the gene models and a chromosomal position in the
+same build than the gene models. The `geneAttribution()` function has
+additional optional input:
 
-* `lambda`, the $\lambda$ parameter for the exponential distribution modeling the candidate gene likelihood based on an exponential distribution. The default, based on empirical eQTL data from the Genome-Tissue Expression Project ([GTEx Consortium 2015](http://doi.org/10.1126/science.1262110)), is 7.61e-06. Decreasing `lambda` gives genes that are close to the input locus a higher probability and decreasing it gives genes that are further away a higher probability
-* `maxDist`, the maximum distance from the input locus at which a gene will be considered. Genes that are more than `maxDist` bases away from the input locus will be ignored. The default is 1,000,000 bases
-* `minPP`, the minimum posterior probability at which a gene will be reported. Genes whose posterior probability is less than `minPP` will be summarized as "Other". Set this to 0 to report all genes
+* `lambda`, the $\lambda$ parameter for the exponential distribution modeling
+  the candidate gene likelihood based on an exponential distribution. The
+  default, based on empirical eQTL data from the Genome-Tissue Expression
+  Project ([GTEx Consortium 2015](http://doi.org/10.1126/science.1262110)), is
+  7.61e-06. Decreasing `lambda` gives genes that are close to the input locus
+  a higher probability and decreasing it gives genes that are further away a
+  higher probability
+* `maxDist`, the maximum distance from the input locus at which a gene will be
+  considered. Genes that are more than `maxDist` bases away from the input
+  locus will be ignored. The default is 1,000,000 bases
+* `minPP`, the minimum posterior probability at which a gene will be reported.
+  Genes whose posterior probability is less than `minPP` will be summarized as
+  "Other". Set this to 0 to report all genes
 
 ## Using empirical data
 
@@ -51,23 +91,44 @@ geneLocs <- geneModels()
 fileName1 <- system.file("extdata", "hiCRegions.b38.bed", package="geneAttribution")
 fileName2 <- system.file("extdata", "eqtlHaplotypeBlocks.b38.bed", package="geneAttribution")
 empirical <- loadBed(c(fileName1, fileName2), c(2, 5))
-ga("chr2", 127156000, geneLocs, empirical)
+geneAttribution("chr2", 127156000, geneLocs, empirical)
 
 # As above, but with user-supplied empirical data file in UCSC .BED format
 geneLocs <- geneModels()
 empirical <- loadBed("INPUT_FILE.bed", weights=1.5) # INPUT_FILE.bed is a correctly formatted .BED file
-ga("chr2", 127156000, geneLocs, empirical)
+geneAttribution("chr2", 127156000, geneLocs, empirical)
 ```
 
-In addition, `geneAttribution` can make use of empirical data that links genomic loci to genes. eQTLs, which link genetic variants to the expression of specific genes, are an example of this. If the input locus is located inside the regions defined in the empirical data, the likelihood of the associated gene is multiplied by the associated weighting. User-provided empirical data can be loaded by using the `loadBed()` function.
+In addition, `geneAttribution` can make use of empirical data that links
+genomic loci to genes. eQTLs, which link genetic variants to the expression of
+specific genes, are an example of this. If the input locus is located inside
+the regions defined in the empirical data, the likelihood of the associated
+gene is multiplied by the associated weighting. User-provided empirical data
+can be loaded by using the `loadBed()` function.
 
-The loadBed funtion reads user-provided files in UCSC .BED format. .BED files must be tab-separated and the columns must be in the following order: chromosome, start, end, gene symbol. An optional fifth score column may also be provided. Gene symbols used in the empirical data must match the symbols used for the gene models and the genome build (e.g. GRCh38) must also match the genome build of the gene models.
+The loadBed funtion reads user-provided files in UCSC .BED format. .BED files
+must be tab-separated and the columns must be in the following order:
+chromosome, start, end, gene symbol. An optional fifth score column may also
+be provided. Gene symbols used in the empirical data must match the symbols
+used for the gene models and the genome build (e.g. GRCh38) must also match the
+genome build of the gene models.
 
-Together with the .BED files, weightings for the data may be provided. The default for this is 2, which doubles the likelihoods for genes if the input locus is located in a region defined by the empirical data. A weighting of 1 would not change the likelihood, and a weighting of less than 1 would decrease the likelihood. Alternatively to reading .BED files, users may construct empirical data themselves as a list of GenomicRanges objects with a score column containing the weights.
+Together with the .BED files, weightings for the data may be provided. The
+default for this is 2, which doubles the likelihoods for genes if the input
+locus is located in a region defined by the empirical data. A weighting of 1
+would not change the likelihood, and a weighting of less than 1 would decrease
+the likelihood. Alternatively to reading .BED files, users may construct
+empirical data themselves as a list of GenomicRanges objects with a score
+column containing the weights.
 
 The `extdata` directory provides two .BED files in genome build GRCh38:
 
-* `hiCRegions.b38.bed`, which contains Capture Hi-C genome conformation data linking promoters to other genomic regions in the GM12878 CD34 cell line ([Mifsud et al. 2015](http://doi.org/10.1038/ng.3286))
-* ` eqtlHaplotypeBlocks.b38.bed`, which defines haplotype blocks with eQTLs in at least two different tissues from the Genome-Tissue Expression Project ([GTEx Consortium 2015](http://doi.org/10.1126/science.1262110))
+* `hiCRegions.b38.bed`, which contains Capture Hi-C genome conformation data
+  linking promoters to other genomic regions in the GM12878 CD34 cell line
+  ([Mifsud et al. 2015](http://doi.org/10.1038/ng.3286))
+* ` eqtlHaplotypeBlocks.b38.bed`, which defines haplotype blocks with eQTLs in
+  at least two different tissues from the Genome-Tissue Expression Project
+  ([GTEx Consortium 2015](http://doi.org/10.1126/science.1262110))
 
-Because both files are supplied as examples, they are limited to chromosome 2.
+Because both files are supplied as examples, they are limited to a 10 MB region
+(120,000,000-130,000,000) on chromosome 2.
