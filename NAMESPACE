@@ -1,7 +1,7 @@
 export(geneModels)
 export(loadBed)
 export(normP)
-export(ga)
+export(geneAttribution)
 import(utils)
 import(GenomicRanges)
 import(org.Hs.eg.db)
