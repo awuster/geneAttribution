@@ -1,7 +1,7 @@
 Package: geneAttribution
 Type: Package
 Title: Identification of candidate genes associated with genetic variation
-Version: 0.99.1
+Version: 0.99.2
 Date: 2016-07-19
 Author: Arthur Wuster
 Maintainer: Arthur Wuster <wustera@gene.com>
@@ -12,7 +12,7 @@ Description: Identification of the most likely gene or genes through which
     genomic regions to genes (e.g. eQTL or genome conformation data) can be used if
     it is supplied in the UCSC .BED file format.
 License: Artistic-2.0
-biocViews:
+biocViews: 
     SNP,
     GenePrediction,
     GenomeWideAssociation,
@@ -31,6 +31,7 @@ Suggests:
     TxDb.Hsapiens.UCSC.hg38.knownGene,
     TxDb.Hsapiens.UCSC.hg19.knownGene,
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat
 RoxygenNote: 5.0.1
 VignetteBuilder: knitr
